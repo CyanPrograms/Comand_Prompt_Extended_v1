@@ -70,7 +70,7 @@ import shutil as sl
 
 ipconfigr  =  ""
 nslookupr  =  ""
-ipcheckr   =  ""
+pingr       =  ""
 netstatr   =  ""
 elsar      =  ""
 platform   =  ""
@@ -85,7 +85,7 @@ def about(): #izpise osnove o programu
    ----ABOUT----
         Definition:
             Shows details about the program: Author, version, creation date,
-            licence, version date.
+            license, version date.
         Command:
             about
         Example:
@@ -108,7 +108,7 @@ def about(): #izpise osnove o programu
 
 # --------------------------------------------------------------------------- #
 
-def ipcheck(pop): # ping funkcija
+def ping(pop): # ping funkcija
 
     '''
     
@@ -126,10 +126,18 @@ def ipcheck(pop): # ping funkcija
             Enter the computer name or IPv4 address: gimvic.org
     '''
 
-    global ipcheckr
-    status, pingc  =  sp.getstatusoutput("ping "  +  str(pop))
+    global pingr
+    
+    if pop != 'ping':       
+        status, pingc  =  sp.getstatusoutput(str(pop))
+    elif pop == 'ping':
+        pop = input("Enter the computer name or IPv4 address: ")
+        status, pingc  =  sp.getstatusoutput("ping "  +  str(pop))
+    else:
+        print("Error...")
+        
     if status == 0:
-        ipcheckr = pingc
+        pingr = pingc
         print("\n\t\tSystem Operational - Returned status: "  +  str(status) +  
               "\n\n"  +  "\t\tSystem returns: ")
         print("\t"  +  pingc.replace("\n","\n\t\t"))
@@ -149,7 +157,7 @@ def ipmac(sw, fnd="Physical Address"): #iskalna funkcija
 
 # --------------------------------------------------------------------------- #
 
-def nslookup(URL): # Definira funkcijo nslookup
+def nslookup(nsc): # Definira funkcijo nslookup
 
     '''
     
@@ -171,12 +179,21 @@ def nslookup(URL): # Definira funkcijo nslookup
     
     global nslookupr
     
-    addr = sp.getstatusoutput("nslookup "  +  str(URL))
-    if addr[0] == 0:
-        nslookupr = addr[1]
-        print("URL: "  +  URL  +  " - Returned information: \n\n"  +  addr[1])
+    if nsc != "nslookup":
+        stat, nso = sp.getstatusoutput(str(nsc))
+        URL = nsc[8:].strip()
+    elif nsc == "nslookup":
+        nsc = input("Enter URL: ")
+        stat, nso = sp.getstatusoutput("nslookup "  +  str(nsc))
+        URL = nsc
     else:
-        print("Nslookup failed - Returned status:"  +  addr[0])
+        print("Error...")
+    
+    if stat == 0:
+        nslookupr = nso
+        print("URL: "  +  URL  +  " - Returned information: \n\n"  +  nso)
+    else:
+        print("Nslookup failed - Returned status:"  +  stat)
 
 # --------------------------------------------------------------------------- #
 
@@ -236,7 +253,7 @@ def phelp(hcommand):  # Definira funkcijo phelp
         hcommand  =  hcommand[4:].strip()
        
         if hcommand    ==  "ping"  :
-            print(ipcheck.__doc__)
+            print(ping.__doc__)
         elif hcommand  ==  "nslookup"  :
             print(nslookup.__doc__)
         elif hcommand  ==  "ipconfig"  :
@@ -253,6 +270,8 @@ def phelp(hcommand):  # Definira funkcijo phelp
             print(save_result.__doc__)
         elif hcommand  ==  "cldir"  :
             print(clear_log.__doc__)
+        elif hcommand  ==  "time"  :
+            print(current_time.__doc__)
         elif hcommand  ==  "abd"  :
             print(details)
         else:
@@ -273,6 +292,7 @@ def phelp(hcommand):  # Definira funkcijo phelp
         "search    -  Searches thru previously called commands.",
         "save      -  Saves the result of any command you input",
         "cldir     -  Clears the log direcotry",
+        "time      -  Displays current time",
         "about     -  Display about information",
         "help      -  Print help menu",
         "exit      -  Exit program" 
@@ -339,7 +359,7 @@ def netstat(netcom): #definira funcijo netstat
             
             netstat
             
-        Options in ipicofig:
+        Options in netstat:
             -a            Displays all connections and listening ports.
             -b            Displays the executable involved in creating each connection or
                           listening port. In some cases well-known executables host
@@ -432,7 +452,7 @@ def search_order(searchord): # Funkcija ki sluzi kot umesnik med ipmac in
     global nslookupr       
     global netstatr   
     global elsar
-    global ipcheckr
+    global pingr
     
     if searchord  ==  "":
         print("\n\tFunction " + str(searchord) + " not run")
@@ -468,7 +488,7 @@ def searchglobal(cmd): #funkcija ki poda podatke iz gcf v search_order
     global nslookupr        
     global netstatr   
     global elsar
-    global ipcheckr
+    global pingr
     
     cmd = cmd[6:].strip()
     
@@ -477,7 +497,7 @@ def searchglobal(cmd): #funkcija ki poda podatke iz gcf v search_order
     elif cmd == "nslookup":
         search_order(str(nslookupr))
     elif cmd == "ping":
-        search_order(str(ipcheckr))
+        search_order(str(pingr))
     elif cmd == "netstat":
         search_order(str(netstatr))
     elif cmd == "sysinfo":
@@ -515,7 +535,7 @@ def platform(platcom): #izpise sistemske informacije
             
             Processor      - Displays processor deatails
             
-            Arhitecture    - Display the bits and linkage
+            Architecture   - Display the bits and linkage
             
         Example:
            
@@ -581,6 +601,21 @@ def platform(platcom): #izpise sistemske informacije
 # --------------------------------------------------------------------------- #
     
 def current_time(): #nam doloci trenutni cas
+    '''
+    ----TIME----
+    
+        Definition:
+            
+            Displays current time
+        
+        Command:
+            
+            time
+            
+        Example:
+            
+            time
+    '''
     y = dt.datetime.now().strftime("%H_%M_%S-%d_%m_%Y")
     return(y)
  
@@ -598,11 +633,11 @@ def text_check(text): # preveri ce je uporabnik unesel ukaz ki obstaja ali ne
     
 def clear_log(): #Izbrise log datoteko
     """
-    ----SYSINFO----
+    ----CLDIR----
         
         Definition:
             
-            Displays all or specified system information.
+            Clears the "log" direcotry
             
         Command:
             
@@ -668,7 +703,7 @@ def save_result(cmd): #funkcija ki poda podatke iz gcf v save_program
     global nslookupr        
     global netstatr   
     global elsar
-    global ipcheckr
+    global pingr
     global searchr
         
     cmd = cmd[4:].strip()
@@ -678,7 +713,7 @@ def save_result(cmd): #funkcija ki poda podatke iz gcf v save_program
     elif cmd == "nslookup":
         save_program(cmd, nslookupr)
     elif cmd == "ping":
-        save_program(cmd, ipcheckr)
+        save_program(cmd, pingr)
     elif cmd == "netstat":
         save_program(cmd, netstatr)
     elif cmd == "sysinfo":
@@ -709,10 +744,10 @@ while work: # "neskoncna" zanka
 
     # vejitev glede na vpisani ukaz
 
-    if command         ==  "ping"        :
-        ipcheck(input("Enter the computer name or IPv4 address: "))
-    elif command       ==  "nslookup"    :
-        nslookup(input("Enter URL: "))
+    if command[0:4]    ==  "ping"        :
+        ping(command)
+    elif command[0:8]  ==  "nslookup"    :
+        nslookup(command)
     elif command       ==  "ipconfig"    :
         ipconfig()
     elif command       ==  "ipconfig -s" :
@@ -733,8 +768,10 @@ while work: # "neskoncna" zanka
         searchglobal(command)        
     elif command[0:4]  ==  "save"        :
         save_result(command)
-    elif command       ==  "cldir"    :
+    elif command       ==  "cldir"       :
         clear_log()
+    elif command       ==  "time"        :
+        print(str(current_time()))
     elif command  in  ["exit", "quit", "end", "killself", "terminate"]  :
         work  =  False
     else                                 :
